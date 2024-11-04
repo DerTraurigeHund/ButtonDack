@@ -10,7 +10,7 @@ import threading
 import logging
 
 # Logging konfigurieren
-logging.basicConfig(filename='/home/luis/Project/my_script.log', level=logging.INFO)
+logging.basicConfig(filename='my_script.log', level=logging.INFO)
 
 # Beispiel für eine log-Nachricht
 logging.info('Script started')
@@ -21,7 +21,7 @@ logging.info('Script started')
 app = Flask(__name__)
 
 def load_profiles():
-    with open("/home/luis/Project/button.json") as file:
+    with open("button.json") as file:
         return json.load(file)
 
 
@@ -42,7 +42,7 @@ def send_notification(title, message):
 
 def play_sound():
     # Load and lower the volume of the sound
-    sound = AudioSegment.from_mp3("/home/luis/Project/error.mp3")
+    sound = AudioSegment.from_mp3("error.mp3")
     sound -= 6
     play(sound)
 
