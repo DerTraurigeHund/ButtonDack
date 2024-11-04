@@ -66,3 +66,4 @@ You should now be in the virtual environment, with all necessary libraries insta
 ## Additional Information
 
 For any additional setup or troubleshooting information, consult the project documentation or reach out to the project maintainer.
+You can reach me via <a herf="mailto://luis.thomas@goldstudios.de"email</a>
