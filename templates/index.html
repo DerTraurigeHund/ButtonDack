@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web StreamDeck</title>
+    <style>
+        /* Global Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #1e1e2f;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            flex-direction: column;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2rem;
+            color: #f5f5f5;
+        }
+
+        h2 {
+            margin: 15px 0;
+            font-size: 1.5rem;
+            color: #b3b3b3;
+        }
+
+        .profile-container {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            width: 100%;
+            max-width: 1000px;
+            margin-top: -50px;
+        }
+
+        /* Button Styles */
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            padding: 10px;
+        }
+
+        .button {
+            background: #282a36;
+            border-radius: 8px;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            transition: transform 0.2s ease, background 0.2s ease;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .button img {
+            width: 75px;
+            height: 75px;
+            margin-bottom: 10px;
+        }
+
+        .waiting {
+            background: #ffc400;
+        }
+
+        .button-name {
+            font-size: 1rem;
+            text-align: center;
+            color: #f0f0f0;
+        }
+
+        /* Erfolgreiches Feedback */
+        .success {
+            background-color: #28a745 !important;
+            transition: background-color 0.3s ease;
+        }
+
+        .error {
+            background-color: #dc3545 !important;
+            transition: background-color 0.3s ease;
+        }
+
+        /* Alert Dialog */
+        #alert {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #282a36;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            color: #ffffff;
+        }
+
+        #alert h3 {
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        #alert button {
+            background: #f05d5e;
+            border: none;
+            color: #ffffff;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #alert button:hover {
+            background: #d14b4c;
+        }
+
+        /* Navigation Buttons */
+        #navButton, #fullscreenButton {
+            position: absolute;
+            top: 15px;
+            background: #333;
+            color: #ffffff;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        #navButton {
+            right: 15px;
+        }
+
+        #fullscreenButton {
+            right: 100px; /* Abstände anpassen */
+        }
+
+        #navButton:hover, #fullscreenButton:hover {
+            background: #444;
+        }
+
+        /* Overlay Navigation */
+        #overlayNav {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .overlay-content {
+            background: #282a36;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .overlay-content h3 {
+            margin-bottom: 15px;
+            color: #ffffff;
+            font-size: 1.5rem;
+        }
+
+        .profile-link {
+            color: #ffffff;
+            font-size: 1.2rem;
+            text-decoration: none;
+            margin: 10px 0;
+            display: block;
+            padding: 10px;
+            border-radius: 5px;
+            background: #444;
+            transition: background 0.2s;
+        }
+
+        .profile-link:hover {
+            background: #555;
+        }
+    </style>
+<script>
+    // Funktion zum Senden der Aktion an den Server
+    async function sendAction(profile, buttonId, buttonName) {
+        const buttonElement = document.querySelector(`[data-profile="${profile}"][data-button-id="${buttonId}"]`);
+        set_to_wait(buttonElement);
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 Sekunden Timeout
+
+        try {
+            const response = await fetch('/action', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ profile: profile, button_id: buttonId }),
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+
+            const data = await response.json();
+            if (data.status === "success") {
+                showSuccessFeedback(buttonElement);
+            } else {
+                showAlert(buttonElement);
+            }
+        } catch (error) {
+            if (error.name === 'AbortError') {
+                // Zweiter Versuch nach Timeout
+                retryAction(profile, buttonId, buttonElement);
+            } else {
+                console.error('Error:', error);
+                showAlert(buttonElement);
+            }
+        }
+    }
+
+    // Funktion für den zweiten Versuch
+    async function retryAction(profile, buttonId, buttonElement) {
+        set_to_wait(buttonElement);
+
+        try {
+            const response = await fetch('/action', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ profile: profile, button_id: buttonId })
+            });
+
+            const data = await response.json();
+            if (data.status === "success") {
+                showSuccessFeedback(buttonElement);
+            } else {
+                showAlert(buttonElement);
+            }
+        } catch (error) {
+            console.error('Retry failed:', error);
+            showAlert(buttonElement);
+        }
+    }
+
+    // Zeigt ein grünes Feedback für erfolgreiche Aktionen
+    function showSuccessFeedback(buttonElement) {
+        buttonElement.classList.remove("waiting");
+        buttonElement.classList.add("success");
+        setTimeout(() => {
+            buttonElement.classList.remove("success");
+        }, 500);
+    }
+
+    function set_to_wait(buttonElement) {
+        buttonElement.classList.add("waiting");
+    }
+
+    // Navigation Overlay öffnen und schließen
+    function openNav() {
+        document.getElementById("overlayNav").style.display = "flex";
+    }
+
+    function closeNav() {
+        document.getElementById("overlayNav").style.display = "none";
+    }
+
+    // Profil wechseln
+    function switchProfile(profile) {
+        const profileContainers = document.querySelectorAll('.profile');
+        profileContainers.forEach(container => {
+            container.style.display = 'none'; // Alle Profile verstecken
+        });
+        document.getElementById(profile).style.display = 'block'; // Gewähltes Profil anzeigen
+        closeNav(); // Overlay schließen
+    }
+
+    // Schaltet den Fullscreen-Modus um
+    function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen(); // Vollbild anfordern
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen(); // Vollbild verlassen
+            }
+        }
+    }
+
+    // Zeigt eine benutzerdefinierte Benachrichtigung an
+    function showAlert(buttonElement) {
+        buttonElement.classList.remove("waiting");
+        buttonElement.classList.add("error");
+        setTimeout(() => {
+            buttonElement.classList.remove("error");
+        }, 500);
+    }
+
+    // Schließt die Benachrichtigung
+    function closeAlert() {
+        document.getElementById('alert').style.display = 'none';
+    }
+</script>
+
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation Button -->
+        <button id="navButton" onclick="openNav()">Profile</button>
+        <!-- Fullscreen Button -->
+        <button id="fullscreenButton" onclick="toggleFullscreen()">Fullscreen</button>
+    </div>
+
+    <!-- Profile Container -->
+    <div class="profile-container">
+        {% for profile, buttons in profiles.items() %}
+        <div class="profile" id="{{ profile }}" style="display: {% if loop.first %}block{% else %}none{% endif %};">
+            <h2>{{ profile }}</h2>
+            <div class="button-grid">
+                {% for button_id, button in buttons.items() %}
+                <div class="button" 
+                     onclick="sendAction('{{ profile }}', '{{ button_id }}', '{{ button.name }}')" 
+                     data-profile="{{ profile }}" 
+                     data-button-id="{{ button_id }}">
+                    <img src="/static/images/{{ button.image }}" alt="{{ button.name }}" />
+                    <div class="button-name">{{ button.name }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Overlay Navigation -->
+    <div id="overlayNav" onclick="closeNav()">
+        <div class="overlay-content" onclick="event.stopPropagation()">
+            <h3>Profile wählen</h3>
+            {% for profile in profiles.keys() %}
+            <a href="javascript:void(0);" class="profile-link" onclick="switchProfile('{{ profile }}'); closeNav();">{{ profile }}</a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Alert Box -->
+    <div id="alert">
+        <h3>Benachrichtigung</h3>
+        <p>Aktion erfolgreich.</p>
+        <button onclick="closeAlert()">Schließen</button>
+    </div>
+</body>
+</html>

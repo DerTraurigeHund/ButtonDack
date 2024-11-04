@@ -1,0 +1,603 @@
+{
+    "System": {
+        "button0": {
+            "name": "Shutdown",
+            "image": "shutdown.png",
+            "with_error": true,
+            "action": {
+                "command": "systemctl poweroff -i",
+                "hotkey": []
+            }
+        },
+        "button1": {
+            "name": "Reboot",
+            "image": "restart.png",
+            "with_error": true,
+            "action": {
+                "command": "systemctl reboot -i",
+                "hotkey": []
+            },
+            "hotkey": "[]"
+        },
+        "button2": {
+            "name": "Sleep",
+            "image": "sleep.png",
+            "with_error": true,
+            "action": {
+                "command": "systemctl suspend -i",
+                "hotkey": []
+            },
+            "hotkey": "[]"
+        },
+        "button3": {
+            "name": "Open Settings",
+            "image": "settings.png",
+            "with_error": true,
+            "action": {
+                "command": "",
+                "hotkey": [
+                    [
+                        "ctrl",
+                        "alt",
+                        "s"
+                    ]
+                ]
+            },
+            "hotkey": "[['ctrl', 'alt', 's']]"
+        },
+        "button4": {
+            "name": "Open Terminal",
+            "image": "terminal.png",
+            "with_error": true,
+            "action": {
+                "command": "gnome-terminal",
+                "hotkey": []
+            }
+        },
+        "button5": {
+            "name": "Open SSH",
+            "image": "terminal.png",
+            "with_error": true,
+            "action": {
+                "command": "gnome-terminal -e 'ssh root@goldstudios.de'",
+                "hotkey": []
+            }
+        },
+        "button6": {
+            "name": "shortcut 7",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 7'",
+                "hotkey": []
+            }
+        },
+        "button7": {
+            "name": "shortcut 8",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 8'",
+                "hotkey": []
+            }
+        },
+        "button8": {
+            "name": "shortcut 9",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 9'",
+                "hotkey": []
+            }
+        },
+        "button9": {
+            "name": "shortcut 10",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 10'",
+                "hotkey": []
+            }
+        },
+        "button10": {
+            "name": "shortcut 11",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 11'",
+                "hotkey": []
+            }
+        },
+        "button11": {
+            "name": "shortcut 12",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 12'",
+                "hotkey": []
+            }
+        },
+        "button12": {
+            "name": "shortcut 13",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 13'",
+                "hotkey": []
+            }
+        },
+        "button13": {
+            "name": "shortcut 14",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 14'",
+                "hotkey": []
+            }
+        },
+        "button14": {
+            "name": "shortcut 15",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 15'",
+                "hotkey": []
+            }
+        },
+        "button15": {
+            "name": "shortcut 16",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 16'",
+                "hotkey": []
+            }
+        }
+    },
+    "Media": {
+        "button0": {
+            "name": "Stop",
+            "image": "stop.png",
+            "with_error": true,
+            "action": {
+                "command": "playerctl stop",
+                "hotkey": []
+            }
+        },
+        "button1": {
+            "name": "Previous",
+            "image": "previous.png",
+            "with_error": true,
+            "action": {
+                "command": "playerctl previous",
+                "hotkey": []
+            }
+        },
+        "button2": {
+            "name": "Play/Pause",
+            "image": "play.png",
+            "with_error": true,
+            "action": {
+                "command": "playerctl play-pause",
+                "hotkey": []
+            }
+        },
+        "button3": {
+            "name": "Next",
+            "image": "next.png",
+            "with_error": true,
+            "action": {
+                "command": "playerctl next",
+                "hotkey": []
+            }
+        },
+        "button4": {
+            "name": "Volume Up",
+            "image": "volume_up.png",
+            "with_error": true,
+            "action": {
+                "command": "amixer set Master 5%+",
+                "hotkey": []
+            }
+        },
+        "button5": {
+            "name": "Volume Down",
+            "image": "volume_down.png",
+            "with_error": true,
+            "action": {
+                "command": "amixer set Master 5%-",
+                "hotkey": []
+            }
+        },
+        "button6": {
+            "name": "Volume Up (Spotify)",
+            "image": "volume_up.png",
+            "with_error": true,
+            "action": {
+                "command": "playerctl volume 0.05+",
+                "hotkey": []
+            }
+        },
+        "button7": {
+            "name": "Volume Down (Spotify)",
+            "image": "volume_down.png",
+            "with_error": true,
+            "action": {
+                "command": "playerctl volume 0.05-",
+                "hotkey": []
+            }
+        },
+        "button8": {
+            "name": "shortcut 9",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 9'",
+                "hotkey": []
+            }
+        },
+        "button9": {
+            "name": "shortcut 10",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 10'",
+                "hotkey": []
+            }
+        },
+        "button10": {
+            "name": "shortcut 11",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 11'",
+                "hotkey": []
+            }
+        },
+        "button11": {
+            "name": "shortcut 12",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 12'",
+                "hotkey": []
+            }
+        },
+        "button12": {
+            "name": "shortcut 13",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 13'",
+                "hotkey": []
+            }
+        },
+        "button13": {
+            "name": "shortcut 14",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 14'",
+                "hotkey": []
+            }
+        },
+        "button14": {
+            "name": "shortcut 15",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 15'",
+                "hotkey": []
+            }
+        },
+        "button15": {
+            "name": "shortcut 16",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 16'",
+                "hotkey": []
+            }
+        }
+    },
+    "Apps": {
+        "button0": {
+            "name": "Open Firefox",
+            "image": "firefox.png",
+            "with_error": true,
+            "action": {
+                "command": "firefox",
+                "hotkey": []
+            }
+        },
+        "button1": {
+            "name": "Open Discord",
+            "image": "discord.gif",
+            "with_error": false,
+            "action": {
+                "command": "discord",
+                "hotkey": []
+            }
+        },
+        "button2": {
+            "name": "Open Spotify",
+            "image": "spotify.png",
+            "with_error": false,
+            "action": {
+                "command": "spotify",
+                "hotkey": []
+            },
+            "hotkey": "[]"
+        },
+        "button3": {
+            "name": "Open Minecraft Launcher",
+            "image": "minecraft.png",
+            "with_error": true,
+            "action": {
+                "command": "minecraft-launcher",
+                "hotkey": []
+            },
+            "hotkey": "[]"
+        },
+        "button4": {
+            "name": "Open Visual Studio Code",
+            "image": "vscode.png",
+            "with_error": true,
+            "action": {
+                "command": "code",
+                "hotkey": []
+            },
+            "hotkey": "[]"
+        },
+        "button5": {
+            "name": "Open Steam",
+            "image": "steam.png",
+            "with_error": false,
+            "action": {
+                "command": "steam",
+                "hotkey": []
+            },
+            "hotkey": "[]"
+        },
+        "button6": {
+            "name": "Open Thunderbird (Email)",
+            "image": "thunderbird.png",
+            "with_error": true,
+            "action": {
+                "command": "thunderbird",
+                "hotkey": []
+            },
+            "hotkey": "[]"
+        },
+        "button7": {
+            "name": "shortcut 8",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 8'",
+                "hotkey": []
+            },
+            "hotkey": "[]"
+        },
+        "button8": {
+            "name": "shortcut 9",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 9'",
+                "hotkey": []
+            }
+        },
+        "button9": {
+            "name": "shortcut 10",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 10'",
+                "hotkey": []
+            }
+        },
+        "button10": {
+            "name": "shortcut 11",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 11'",
+                "hotkey": []
+            }
+        },
+        "button11": {
+            "name": "shortcut 12",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 12'",
+                "hotkey": []
+            }
+        },
+        "button12": {
+            "name": "shortcut 13",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 13'",
+                "hotkey": []
+            }
+        },
+        "button13": {
+            "name": "shortcut 14",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 14'",
+                "hotkey": []
+            }
+        },
+        "button14": {
+            "name": "shortcut 15",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 15'",
+                "hotkey": []
+            }
+        },
+        "button15": {
+            "name": "Shortcut Settings",
+            "image": "die-einstellungen.png",
+            "with_error": true,
+            "action": {
+                "command": "gnome-terminal -e '/home/luis/Project/.venv/bin/python /home/luis/Project/edit.py'",
+                "hotkey": []
+            },
+            "hotkey": "[]"
+        }
+    },
+    "Unknown Name": {
+        "button0": {
+            "name": "shortcut 1",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 1'",
+                "hotkey": []
+            },
+            "hotkey": "[]"
+        },
+        "button1": {
+            "name": "shortcut 2",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 2'",
+                "hotkey": []
+            }
+        },
+        "button2": {
+            "name": "shortcut 3",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 3'",
+                "hotkey": []
+            }
+        },
+        "button3": {
+            "name": "shortcut 4",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 4'",
+                "hotkey": []
+            }
+        },
+        "button4": {
+            "name": "shortcut 5",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 5'",
+                "hotkey": []
+            }
+        },
+        "button5": {
+            "name": "shortcut 6",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 6'",
+                "hotkey": []
+            }
+        },
+        "button6": {
+            "name": "shortcut 7",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 7'",
+                "hotkey": []
+            }
+        },
+        "button7": {
+            "name": "shortcut 8",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 8'",
+                "hotkey": []
+            }
+        },
+        "button8": {
+            "name": "shortcut 9",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 9'",
+                "hotkey": []
+            }
+        },
+        "button9": {
+            "name": "shortcut 10",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 10'",
+                "hotkey": []
+            }
+        },
+        "button10": {
+            "name": "shortcut 11",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 11'",
+                "hotkey": []
+            }
+        },
+        "button11": {
+            "name": "shortcut 12",
+            "image": "shortcut.png",
+            "with_error": true,
+            "action": {
+                "command": "echo 'shortcut 12'",
+                "hotkey": []
+            }
+        },
+        "button12": {
+            "name": "Crunchyroll",
+            "image": "crunchyroll.png",
+            "with_error": true,
+            "action": {
+                "command": "firefox https://www.crunchyroll.com/",
+                "hotkey": []
+            }
+        },
+        "button13": {
+            "name": "YouTube",
+            "image": "youtube.png",
+            "with_error": true,
+            "action": {
+                "command": "firefox https://www.youtube.com/",
+                "hotkey": []
+            }
+        },
+        "button14": {
+            "name": "ChatGPT",
+            "image": "chatgpt.png",
+            "with_error": true,
+            "action": {
+                "command": "firefox https://chatgpt.com",
+                "hotkey": []
+            }
+        },
+        "button15": {
+            "name": "AniWorld",
+            "image": "aniworld.png",
+            "with_error": true,
+            "action": {
+                "command": "firefox https://aniworld.to/",
+                "hotkey": []
+            }
+        }
+    }
+}

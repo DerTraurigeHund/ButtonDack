@@ -1,0 +1,8 @@
+flask
+pyautogui
+subprocess
+shlex
+pydub
+threading
+customtkinter
+Pillow
