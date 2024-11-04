@@ -5,8 +5,8 @@ from PIL import Image, ImageTk
 import os
 
 # JSON-Datei und Bildordner
-JSON_FILE = "/home/luis/Project/button.json"
-IMAGE_FOLDER = "/home/luis/Project/static/images"
+JSON_FILE = "button.json"
+IMAGE_FOLDER = "static/images"
 
 class ButtonEditorApp(ctk.CTk):
     def __init__(self):
