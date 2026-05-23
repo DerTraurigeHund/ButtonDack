@@ -291,12 +291,12 @@ class _DaemonSettingsTab extends StatelessWidget {
                     style: TextStyle(
                         fontSize: 16, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 12),
-                _infoRow('Status', engine.running ? 'Running' : 'Stopped'),
-                _infoRow('Host', engine.host),
-                _infoRow('Port', '${engine.port}'),
-                _infoRow('Clients', '${engine.clientCount}'),
+                _infoRow('Status', engine.running ? 'Running' : 'Stopped', context),
+                _infoRow('Host', engine.host, context),
+                _infoRow('Port', '${engine.port}', context),
+                _infoRow('Clients', '${engine.clientCount}', context),
                 _infoRow(
-                    'Spotify', cfg.config.spotify.enabled ? 'Enabled' : 'Disabled'),
+                    'Spotify', cfg.config.spotify.enabled ? 'Enabled' : 'Disabled', context),
                 const SizedBox(height: 16),
                 Row(
                   children: [
@@ -342,11 +342,11 @@ class _DaemonSettingsTab extends StatelessWidget {
                     style: TextStyle(
                         fontSize: 16, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
-                _infoRow('Profiles', '${cfg.config.profiles.length}'),
+                _infoRow('Profiles', '${cfg.config.profiles.length}', context),
                 _infoRow(
                     'Total Buttons',
-                    '${cfg.config.profiles.fold<int>(0, (sum, p) => sum + p.buttons.length)}'),
-                _infoRow('Config Path', cfg.configPath),
+                    '${cfg.config.profiles.fold<int>(0, (sum, p) => sum + p.buttons.length)}', context),
+                _infoRow('Config Path', cfg.configPath, context),
               ],
             ),
           ),
@@ -355,7 +355,7 @@ class _DaemonSettingsTab extends StatelessWidget {
     );
   }
 
-  Widget _infoRow(String label, String value) {
+  Widget _infoRow(String label, String value, BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(

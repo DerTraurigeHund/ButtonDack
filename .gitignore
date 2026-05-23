@@ -45,3 +45,4 @@ install/pkg/
 
 *.AppImage
 *.tar.gz
+*.run

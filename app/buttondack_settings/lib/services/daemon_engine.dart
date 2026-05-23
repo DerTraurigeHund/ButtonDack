@@ -307,7 +307,7 @@ class DaemonEngine extends ChangeNotifier {
       }
 
       if (path == '/api/config/update' && request.method == 'POST') {
-        request.transform(utf8.decoder).join().then((body) async {
+        _readBody(request).then((body) async {
           final data = jsonDecode(body);
           await configService
               .update(AppConfig.fromJson(data as Map<String, dynamic>));
@@ -317,7 +317,7 @@ class DaemonEngine extends ChangeNotifier {
       }
 
       if (path == '/api/action' && request.method == 'POST') {
-        request.transform(utf8.decoder).join().then((body) async {
+        _readBody(request).then((body) async {
           final data = jsonDecode(body) as Map<String, dynamic>;
           final profileName = data['profile'] as String? ?? '';
           final buttonId = data['button_id'] as String? ?? '';
@@ -626,6 +626,13 @@ class DaemonEngine extends ChangeNotifier {
     ));
     onTrackChanged?.call(_currentTrack!);
     notifyListeners();
+  }
+
+  /// Read the full request body as a String.
+  Future<String> _readBody(HttpRequest request) async {
+    final bytes = await request.fold<List<int>>(
+        [], (prev, chunk) => prev..addAll(chunk));
+    return utf8.decode(bytes);
   }
 
   @override

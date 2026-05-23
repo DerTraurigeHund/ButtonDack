@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
 
 /// Result of an action execution.
@@ -18,7 +17,7 @@ class ActionResult {
 }
 
 /// Executes shell commands and simulates hotkeys on the host system.
-class ActionRunner {
+class ActionRunner extends ChangeNotifier {
   /// Run a shell command.
   Future<ActionResult> runCommand(String command) async {
     if (command.trim().isEmpty) {
@@ -93,13 +92,10 @@ class ActionRunner {
   }
 
   Future<ActionResult> _pressHotkeysWindows(List<List<String>> hotkeys) async {
-    // Build PowerShell SendKeys commands
     for (final combo in hotkeys) {
       final keys = combo.map(_mapWinKey).join('');
-      final psScript = '''
-\$wshell = New-Object -ComObject wscript.shell;
-\$wshell.SendKeys('$keys');
-''';
+      final psScript =
+          '\$wshell = New-Object -ComObject wscript.shell; \$wshell.SendKeys(\'$keys\');';
       final result = await Process.run(
         'powershell',
         ['-NoProfile', '-Command', psScript],
@@ -126,7 +122,7 @@ class ActionRunner {
       case 'win':
       case 'super':
       case 'meta':
-        return '^{esc}'; // approximation
+        return '^{esc}';
       case 'volume_up':
         return '{VOLUME_UP}';
       case 'volume_down':
@@ -153,13 +149,11 @@ class ActionRunner {
     required List<List<String>> hotkeys,
     required bool withError,
   }) async {
-    // Press hotkeys first
     if (hotkeys.isNotEmpty) {
       final hkResult = await pressHotkeys(hotkeys);
       if (!hkResult.success && withError) return hkResult;
     }
 
-    // Then run command
     if (command != null && command.isNotEmpty) {
       final cmdResult = await runCommand(command);
       if (!cmdResult.success && withError) return cmdResult;
