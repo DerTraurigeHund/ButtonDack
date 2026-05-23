@@ -1,18 +1,19 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/config_model.dart';
+import '../services/daemon_engine.dart';
 
 /// Screen for Spotify integration setup.
 class SpotifySettingsScreen extends StatefulWidget {
   final AppConfig config;
   final ValueChanged<AppConfig> onChanged;
-  final DaemonApiService api;
+  final DaemonEngine engine;
 
   const SpotifySettingsScreen({
     super.key,
     required this.config,
     required this.onChanged,
-    required this.api,
+    required this.engine,
   });
 
   @override
@@ -23,27 +24,34 @@ class _SpotifySettingsScreenState extends State<SpotifySettingsScreen> {
   late TextEditingController _clientIdCtrl;
   late TextEditingController _clientSecretCtrl;
 
-  bool _authInProgress = false;
-  String _authStatus = '';
-
   @override
   void initState() {
     super.initState();
-    _clientIdCtrl = TextEditingController(text: widget.config.spotify.clientId);
+    _clientIdCtrl =
+        TextEditingController(text: widget.config.spotify.clientId);
     _clientSecretCtrl =
         TextEditingController(text: widget.config.spotify.clientSecret);
+
+    // Listen for engine auth state changes
+    widget.engine.addListener(_onEngineChanged);
   }
 
   @override
   void dispose() {
+    widget.engine.removeListener(_onEngineChanged);
     _clientIdCtrl.dispose();
     _clientSecretCtrl.dispose();
     super.dispose();
   }
 
+  void _onEngineChanged() {
+    if (mounted) setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     final spotify = widget.config.spotify;
+    final engine = widget.engine;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Spotify Integration')),
@@ -59,14 +67,16 @@ class _SpotifySettingsScreenState extends State<SpotifySettingsScreen> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: spotify.enabled
+                      color: spotify.enabled && engine.spotifyAuthenticated
                           ? Colors.green.withOpacity(0.1)
                           : Colors.grey.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
                       Icons.music_note,
-                      color: spotify.enabled ? Colors.green : Colors.grey,
+                      color: spotify.enabled && engine.spotifyAuthenticated
+                          ? Colors.green
+                          : Colors.grey,
                       size: 32,
                     ),
                   ),
@@ -75,17 +85,17 @@ class _SpotifySettingsScreenState extends State<SpotifySettingsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Spotify',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        const Text('Spotify',
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold)),
                         Text(
-                          spotify.enabled ? 'Connected' : 'Not configured',
+                          engine.spotifyAuthenticated
+                              ? 'Authenticated'
+                              : spotify.enabled
+                                  ? 'Configured'
+                                  : 'Not configured',
                           style: TextStyle(
-                            color: spotify.enabled
+                            color: engine.spotifyAuthenticated
                                 ? Colors.green
                                 : Colors.grey,
                           ),
@@ -96,9 +106,7 @@ class _SpotifySettingsScreenState extends State<SpotifySettingsScreen> {
                   Switch(
                     value: spotify.enabled,
                     onChanged: (v) {
-                      setState(() {
-                        spotify.enabled = v;
-                      });
+                      spotify.enabled = v;
                       widget.onChanged(widget.config);
                     },
                   ),
@@ -106,6 +114,42 @@ class _SpotifySettingsScreenState extends State<SpotifySettingsScreen> {
               ),
             ),
           ),
+
+          // Now playing preview
+          if (engine.currentTrack != null &&
+              !engine.currentTrack!.isEmpty) ...[
+            const SizedBox(height: 8),
+            Card(
+              child: ListTile(
+                leading: ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: engine.currentTrack!.albumArtUrl.isNotEmpty
+                      ? Image.network(
+                          engine.currentTrack!.albumArtUrl,
+                          width: 48,
+                          height: 48,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(
+                            width: 48,
+                            height: 48,
+                            color: Colors.grey.shade800,
+                            child: const Icon(Icons.music_note),
+                          ),
+                        )
+                      : Container(
+                          width: 48,
+                          height: 48,
+                          color: Colors.grey.shade800,
+                          child: const Icon(Icons.music_note),
+                        ),
+                ),
+                title: Text(engine.currentTrack!.trackName,
+                    maxLines: 1, overflow: TextOverflow.ellipsis),
+                subtitle: Text(engine.currentTrack!.artist,
+                    maxLines: 1, overflow: TextOverflow.ellipsis),
+              ),
+            ),
+          ],
 
           const SizedBox(height: 24),
 
@@ -152,37 +196,54 @@ class _SpotifySettingsScreenState extends State<SpotifySettingsScreen> {
           ),
           const SizedBox(height: 12),
 
-          if (_authInProgress)
-            Column(
-              children: [
-                const LinearProgressIndicator(),
-                const SizedBox(height: 8),
-                Text(_authStatus, textAlign: TextAlign.center),
-              ],
-            ),
-
-          FilledButton.icon(
-            onPressed: _authInProgress ? null : _startAuth,
-            icon: const Icon(Icons.link),
-            label: const Text('Authorize Spotify'),
-          ),
-
-          if (_authStatus.contains('http')) ...[
-            const SizedBox(height: 16),
-            Card(
-              color: Colors.blue.shade50,
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: SelectableText(
-                  _authStatus,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
+          if (engine.spotifyAuthInProgress) ...[
+            const LinearProgressIndicator(),
+            const SizedBox(height: 8),
+            if (engine.spotifyAuthUrl.isNotEmpty)
+              Card(
+                color: Colors.blue.shade50,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Open ${engine.spotifyAuthUrl}',
+                        style: const TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w500),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.shade100,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          engine.spotifyUserCode,
+                          style: const TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 4,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text('Enter this code on the Spotify website'),
+                    ],
                   ),
                 ),
               ),
-            ),
           ],
+
+          FilledButton.icon(
+            onPressed: (engine.spotifyAuthInProgress ||
+                    spotify.clientId.isEmpty)
+                ? null
+                : _startAuth,
+            icon: const Icon(Icons.link),
+            label: const Text('Authorize with Spotify'),
+          ),
 
           const SizedBox(height: 32),
 
@@ -194,8 +255,8 @@ class _SpotifySettingsScreenState extends State<SpotifySettingsScreen> {
             '1. Go to https://developer.spotify.com/dashboard\n'
             '2. Create an app\n'
             '3. Copy Client ID and Client Secret\n'
-            '4. Add http://localhost:42069 to Redirect URIs\n'
-            '5. Enter them above and click Authorize',
+            '4. Enter them above and click Authorize\n'
+            '5. The daemon handles Device Code auth automatically',
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ],
@@ -203,23 +264,9 @@ class _SpotifySettingsScreenState extends State<SpotifySettingsScreen> {
     );
   }
 
-  Future<void> _startAuth() async {
-    setState(() {
-      _authInProgress = true;
-      _authStatus = 'Requesting device code...';
-    });
-
-    final result = await widget.api.startSpotifyAuth();
-    if (result != null) {
-      setState(() {
-        _authStatus =
-            'Open ${result['verification_url']} and enter code: ${result['user_code']}';
-      });
-    } else {
-      setState(() {
-        _authInProgress = false;
-        _authStatus = 'Failed to start authentication';
-      });
-    }
+  void _startAuth() {
+    // The engine handles the entire auth flow internally
+    // It will update state and notify listeners
+    widget.engine.startSpotifyAuth();
   }
 }
