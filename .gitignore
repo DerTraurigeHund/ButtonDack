@@ -43,3 +43,5 @@ install/pkg/
 *.deb
 *.pkg.tar.zst
 
+*.AppImage
+*.tar.gz
