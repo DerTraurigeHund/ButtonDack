@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'dart:math';
+import "dart:math";
+import "package:file_picker/file_picker.dart";
 import '../models/config_model.dart';
 
 /// Screen to manage all profiles and their buttons.
@@ -309,17 +310,33 @@ class _ButtonEditorState extends State<_ButtonEditor> {
                 children: [
                   Expanded(
                     child: TextField(
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'bg_image',
                         hintText: 'wallpaper.png',
                         isDense: true,
-                        border: const OutlineInputBorder(),
+                        border: OutlineInputBorder(),
                       ),
                       onChanged: (v) {
                         btn.bgImage = v;
                         widget.onChanged(btn);
                       },
+                      controller: TextEditingController(text: btn.bgImage),
                     ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.image_search, size: 20),
+                    tooltip: 'Bild auswählen',
+                    onPressed: () async {
+                      final result = await FilePicker.platform.pickFiles(
+                        type: FileType.image,
+                      );
+                      if (result != null && result.files.single.name.isNotEmpty) {
+                        setState(() {
+                          btn.bgImage = result.files.single.name;
+                        });
+                        widget.onChanged(btn);
+                      }
+                    },
                   ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -389,17 +406,39 @@ class _ButtonEditorState extends State<_ButtonEditor> {
               const SizedBox(height: 8),
 
               // Logo Image
-              TextField(
-                decoration: const InputDecoration(
-                  labelText: 'Logo (logo_image)',
-                  hintText: 'steam_logo.png',
-                  isDense: true,
-                  border: OutlineInputBorder(),
-                ),
-                onChanged: (v) {
-                  btn.logoImage = v;
-                  widget.onChanged(btn);
-                },
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      decoration: InputDecoration(
+                        labelText: 'Logo (logo_image)',
+                        hintText: 'steam_logo.png',
+                        isDense: true,
+                        border: const OutlineInputBorder(),
+                      ),
+                      onChanged: (v) {
+                        btn.logoImage = v;
+                        widget.onChanged(btn);
+                      },
+                      controller: TextEditingController(text: btn.logoImage),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.image_search, size: 20),
+                    tooltip: 'Logo auswählen',
+                    onPressed: () async {
+                      final result = await FilePicker.platform.pickFiles(
+                        type: FileType.image,
+                      );
+                      if (result != null && result.files.single.name.isNotEmpty) {
+                        setState(() {
+                          btn.logoImage = result.files.single.name;
+                        });
+                        widget.onChanged(btn);
+                      }
+                    },
+                  ),
+                ],
               ),
 
               const SizedBox(height: 8),
