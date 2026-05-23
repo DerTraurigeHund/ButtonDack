@@ -5,14 +5,18 @@ import 'package:http/http.dart' as http;
 /// Model for a single button.
 class ButtonConfig {
   String name;
-  String image;
+  String bgImage;
+  String logoImage;
+  String bgColor;
   String command;
   List<List<String>> hotkeys;
   bool withError;
 
   ButtonConfig({
     this.name = '',
-    this.image = '',
+    this.bgImage = '',
+    this.logoImage = '',
+    this.bgColor = '',
     this.command = '',
     List<List<String>>? hotkeys,
     this.withError = false,
@@ -20,7 +24,9 @@ class ButtonConfig {
 
   Map<String, dynamic> toJson() => {
         'name': name,
-        'image': image,
+        'bg_image': bgImage,
+        'logo_image': logoImage,
+        'bg_color': bgColor,
         'command': command,
         'hotkeys': hotkeys,
         'with_error': withError,
@@ -28,7 +34,9 @@ class ButtonConfig {
 
   factory ButtonConfig.fromJson(Map<String, dynamic> json) => ButtonConfig(
         name: json['name'] as String? ?? '',
-        image: json['image'] as String? ?? '',
+        bgImage: json['bg_image'] as String? ?? '',
+        logoImage: json['logo_image'] as String? ?? '',
+        bgColor: json['bg_color'] as String? ?? '',
         command: json['command'] as String? ?? '',
         hotkeys: (json['hotkeys'] as List<dynamic>?)
                 ?.map((e) =>

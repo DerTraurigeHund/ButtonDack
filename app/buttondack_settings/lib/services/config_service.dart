@@ -86,39 +86,39 @@ class ConfigService extends ChangeNotifier {
         Profile(name: 'System', buttons: {
           'btn0': ButtonConfig(
               name: 'Shutdown',
-              image: 'shutdown.png',
+              bgImage: 'shutdown.png',
               command: _isWindows() ? 'shutdown /s /t 0' : 'systemctl poweroff -i',
               withError: true),
           'btn1': ButtonConfig(
               name: 'Reboot',
-              image: 'restart.png',
+              bgImage: 'restart.png',
               command: _isWindows() ? 'shutdown /r /t 0' : 'systemctl reboot -i',
               withError: true),
           'btn2': ButtonConfig(
               name: 'Sleep',
-              image: 'sleep.png',
+              bgImage: 'sleep.png',
               command: _isWindows() ? 'rundll32.exe powrprof.dll,SetSuspendState 0,1,0' : 'systemctl suspend -i',
               withError: true),
         }),
         Profile(name: 'Media', buttons: {
           'btn0': ButtonConfig(
-              name: 'Play/Pause', image: 'play.png',
+              name: 'Play/Pause', bgImage: 'play.png',
               command: _isWindows() ? '' : 'playerctl play-pause',
               hotkeys: [if (_isWindows()) ['media', 'play_pause']]),
-          'btn1': ButtonConfig(name: 'Next', image: 'next.png',
+          'btn1': ButtonConfig(name: 'Next', bgImage: 'next.png',
               command: _isWindows() ? '' : 'playerctl next',
               hotkeys: [if (_isWindows()) ['media', 'next']]),
-          'btn2': ButtonConfig(name: 'Previous', image: 'previous.png',
+          'btn2': ButtonConfig(name: 'Previous', bgImage: 'previous.png',
               command: _isWindows() ? '' : 'playerctl previous',
               hotkeys: [if (_isWindows()) ['media', 'previous']]),
-          'btn3': ButtonConfig(name: 'Stop', image: 'stop.png',
+          'btn3': ButtonConfig(name: 'Stop', bgImage: 'stop.png',
               command: _isWindows() ? '' : 'playerctl stop'),
-          'btn4': ButtonConfig(name: 'Vol Up', image: 'volume_up.png',
+          'btn4': ButtonConfig(name: 'Vol Up', bgImage: 'volume_up.png',
               command: _isWindows()
                   ? ''  // Handled via hotkey
                   : 'amixer set Master 5%+',
               hotkeys: [if (_isWindows()) ['volume_up']]),
-          'btn5': ButtonConfig(name: 'Vol Down', image: 'volume_down.png',
+          'btn5': ButtonConfig(name: 'Vol Down', bgImage: 'volume_down.png',
               command: _isWindows() ? '' : 'amixer set Master 5%-',
               hotkeys: [if (_isWindows()) ['volume_down']]),
         }),

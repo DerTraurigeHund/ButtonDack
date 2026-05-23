@@ -73,14 +73,18 @@ class Profile {
 
 class ButtonConfig {
   final String name;
-  final String image;
+  final String bgImage;
+  final String logoImage;
+  final String bgColor;
   final String command;
   final List<List<String>> hotkeys;
   final bool withError;
 
   ButtonConfig({
     required this.name,
-    this.image = '',
+    this.bgImage = '',
+    this.logoImage = '',
+    this.bgColor = '',
     this.command = '',
     this.hotkeys = const [],
     this.withError = false,
@@ -89,7 +93,9 @@ class ButtonConfig {
   factory ButtonConfig.fromJson(Map<String, dynamic> json) {
     return ButtonConfig(
       name: json['name'] as String? ?? '',
-      image: json['image'] as String? ?? '',
+      bgImage: json['bg_image'] as String? ?? '',
+      logoImage: json['logo_image'] as String? ?? '',
+      bgColor: json['bg_color'] as String? ?? '',
       command: json['command'] as String? ?? '',
       hotkeys: _parseHotkeys(json['hotkeys']),
       withError: json['with_error'] as bool? ?? false,

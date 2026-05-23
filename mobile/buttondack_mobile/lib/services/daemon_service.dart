@@ -1,13 +1,23 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import '../models/models.dart';
+
+/// Result of an action execution, dispatched to listeners.
+class ActionResult {
+  final bool success;
+  final String? error;
+  final String? output;
+
+  ActionResult({required this.success, this.error, this.output});
+}
 
 /// Manages the WebSocket connection to the ButtonDack daemon.
 class DaemonService extends ChangeNotifier {
   WebSocketChannel? _channel;
-  String _host = 'localhost';
+  String _host = '';
   int _port = 42069;
   bool _connected = false;
   bool _reconnecting = false;
@@ -17,17 +27,26 @@ class DaemonService extends ChangeNotifier {
   TrackInfo? _currentTrack;
   String _activeProfile = '';
 
+  // Action result callbacks
+  final StreamController<ActionResult> _actionResults =
+      StreamController<ActionResult>.broadcast();
+
+  Stream<ActionResult> get actionResults => _actionResults.stream;
+
   // Getters
   bool get connected => _connected;
   AppConfig? get config => _config;
   TrackInfo? get currentTrack => _currentTrack;
   String get activeProfile => _activeProfile;
+  String get host => _host;
+  int get port => _port;
   String get connectionAddress => '$_host:$_port';
 
   List<Profile> get profiles => _config?.profiles ?? [];
   Profile? get currentProfile {
     if (_activeProfile.isEmpty && profiles.isNotEmpty) {
       _activeProfile = profiles.first.name;
+      notifyListeners();
     }
     try {
       return profiles.firstWhere((p) => p.name == _activeProfile);
@@ -37,14 +56,28 @@ class DaemonService extends ChangeNotifier {
   }
 
   /// Connect to the daemon at the given address.
-  Future<bool> connect({String host = 'localhost', int port = 42069}) async {
+  Future<bool> connect({String host = '', int port = 42069}) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // Use saved values if none provided
+    if (host.isEmpty) {
+      host = prefs.getString('daemon_host') ?? 'localhost';
+    }
+    if (port == 42069) {
+      port = prefs.getInt('daemon_port') ?? 42069;
+    }
+
     _host = host;
     _port = port;
+
+    // Save connection details
+    await prefs.setString('daemon_host', host);
+    await prefs.setInt('daemon_port', port);
 
     try {
       _channel?.sink.close();
       _channel = WebSocketChannel.connect(
-        Uri.parse('ws://$_host:$_port/ws'),
+        Uri.parse('ws://$host:$port/ws'),
       );
 
       await _channel!.ready;
@@ -52,7 +85,6 @@ class DaemonService extends ChangeNotifier {
       _reconnecting = false;
       notifyListeners();
 
-      // Listen for messages
       _channel!.stream.listen(
         _handleMessage,
         onError: (error) {
@@ -77,6 +109,15 @@ class DaemonService extends ChangeNotifier {
       _scheduleReconnect();
       return false;
     }
+  }
+
+  /// Load saved connection details without connecting.
+  Future<Map<String, dynamic>> loadSavedConnection() async {
+    final prefs = await SharedPreferences.getInstance();
+    return {
+      'host': prefs.getString('daemon_host') ?? 'localhost',
+      'port': prefs.getInt('daemon_port') ?? 42069,
+    };
   }
 
   /// Disconnect from the daemon.
@@ -146,7 +187,21 @@ class DaemonService extends ChangeNotifier {
   }
 
   void _handleActionResult(dynamic payload) {
-    debugPrint('[Daemon] Action result: $payload');
+    if (payload == null) return;
+    try {
+      final map = payload as Map<String, dynamic>;
+      final success = map['success'] as bool? ?? false;
+      final error = map['error'] as String?;
+      final output = map['output'] as String?;
+
+      _actionResults.add(ActionResult(
+        success: success,
+        error: error,
+        output: output,
+      ));
+    } catch (e) {
+      debugPrint('[Daemon] ActionResult parse error: $e');
+    }
   }
 
   void _scheduleReconnect() {
@@ -171,6 +226,7 @@ class DaemonService extends ChangeNotifier {
   void dispose() {
     _reconnectTimer?.cancel();
     _channel?.sink.close();
+    _actionResults.close();
     super.dispose();
   }
 }

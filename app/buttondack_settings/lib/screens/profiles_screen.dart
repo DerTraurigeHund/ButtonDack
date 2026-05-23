@@ -34,9 +34,9 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Profiles & Buttons')),
+      appBar: AppBar(title: const Text('Profile & Buttons')),
       body: _profiles.isEmpty
-          ? const Center(child: Text('No profiles yet. Add one!'))
+          ? const Center(child: Text('Noch keine Profile. Erstelle eins!'))
           : ListView.builder(
               padding: const EdgeInsets.all(12),
               itemCount: _profiles.length,
@@ -57,12 +57,12 @@ class _ProfilesScreenState extends State<ProfilesScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           setState(() {
-            _profiles.add(Profile(name: 'New Profile'));
+            _profiles.add(Profile(name: 'Neues Profil'));
           });
           _save();
         },
         icon: const Icon(Icons.add),
-        label: const Text('Add Profile'),
+        label: const Text('Profil hinzufügen'),
       ),
     );
   }
@@ -103,11 +103,12 @@ class _ProfileCardState extends State<_ProfileCard> {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: ExpansionTile(
-        leading: Icon(Icons.folder, color: Theme.of(context).colorScheme.primary),
+        leading:
+            Icon(Icons.folder, color: Theme.of(context).colorScheme.primary),
         title: TextField(
           controller: _nameCtrl,
           decoration: const InputDecoration(
-            labelText: 'Profile Name',
+            labelText: 'Profilname',
             border: InputBorder.none,
             isDense: true,
           ),
@@ -116,7 +117,7 @@ class _ProfileCardState extends State<_ProfileCard> {
             widget.onChanged(widget.profile);
           },
         ),
-        subtitle: Text('${widget.profile.buttons.length} buttons'),
+        subtitle: Text('${widget.profile.buttons.length} Buttons'),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -132,12 +133,13 @@ class _ProfileCardState extends State<_ProfileCard> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               children: [
-                const Text('Buttons:', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text('Buttons:',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
                 const Spacer(),
                 TextButton.icon(
                   onPressed: _addButton,
                   icon: const Icon(Icons.add, size: 18),
-                  label: const Text('Add'),
+                  label: const Text('Hinzufügen'),
                 ),
               ],
             ),
@@ -164,7 +166,7 @@ class _ProfileCardState extends State<_ProfileCard> {
   void _addButton() {
     final id = 'btn${widget.profile.buttons.length}';
     setState(() {
-      widget.profile.buttons[id] = ButtonConfig(name: 'New Button');
+      widget.profile.buttons[id] = ButtonConfig(name: 'Neuer Button');
     });
     widget.onChanged(widget.profile);
   }
@@ -190,23 +192,43 @@ class _ButtonEditor extends StatefulWidget {
 class _ButtonEditorState extends State<_ButtonEditor> {
   late TextEditingController _nameCtrl;
   late TextEditingController _cmdCtrl;
+  late TextEditingController _bgColorCtrl;
+
+  // Vordefinierte Farben zur Auswahl
+  static const _presetColors = [
+    '#6B4EFF', '#FF4444', '#44BB44', '#4488FF',
+    '#FF8844', '#FF44FF', '#44DDDD', '#888888',
+    '#1a1a2e', '#16213e', '#282a36', '#2d2d2d',
+    '#E91E63', '#9C27B0', '#00BCD4', '#FF5722',
+  ];
 
   @override
   void initState() {
     super.initState();
     _nameCtrl = TextEditingController(text: widget.button.name);
     _cmdCtrl = TextEditingController(text: widget.button.command);
+    _bgColorCtrl = TextEditingController(text: widget.button.bgColor);
   }
 
   @override
   void dispose() {
     _nameCtrl.dispose();
     _cmdCtrl.dispose();
+    _bgColorCtrl.dispose();
     super.dispose();
+  }
+
+  Color? _parseColor(String hex) {
+    if (hex.isEmpty) return null;
+    final h = hex.replaceFirst('#', '');
+    if (h.length != 6) return null;
+    return Color(int.parse('FF$h', radix: 16));
   }
 
   @override
   Widget build(BuildContext context) {
+    final btn = widget.button;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 4),
       child: Card(
@@ -215,19 +237,42 @@ class _ButtonEditorState extends State<_ButtonEditor> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Preview
+              Container(
+                height: 80,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: _parseColor(btn.bgColor) ?? Colors.grey.shade800,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Center(
+                  child: Text(
+                    btn.name,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+
+              // Name + Delete
               Row(
                 children: [
                   Expanded(
                     child: TextField(
                       controller: _nameCtrl,
                       decoration: const InputDecoration(
-                        labelText: 'Button Name',
+                        labelText: 'Button-Name',
                         isDense: true,
                         border: OutlineInputBorder(),
                       ),
                       onChanged: (v) {
-                        widget.button.name = v;
-                        widget.onChanged(widget.button);
+                        btn.name = v;
+                        widget.onChanged(btn);
+                        setState(() {}); // refresh preview
                       },
                     ),
                   ),
@@ -239,32 +284,139 @@ class _ButtonEditorState extends State<_ButtonEditor> {
                 ],
               ),
               const SizedBox(height: 8),
+
+              // Command
               TextField(
                 controller: _cmdCtrl,
                 decoration: const InputDecoration(
                   labelText: 'Command',
-                  hintText: 'e.g. systemctl reboot -i',
+                  hintText: 'z.B. systemctl reboot -i',
                   isDense: true,
                   border: OutlineInputBorder(),
                 ),
                 onChanged: (v) {
-                  widget.button.command = v;
-                  widget.onChanged(widget.button);
+                  btn.command = v;
+                  widget.onChanged(btn);
                 },
               ),
               const SizedBox(height: 8),
+
+              // Background Image + Color
+              Text('Hintergrund',
+                  style: Theme.of(context).textTheme.labelMedium),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      decoration: InputDecoration(
+                        labelText: 'bg_image',
+                        hintText: 'wallpaper.png',
+                        isDense: true,
+                        border: const OutlineInputBorder(),
+                      ),
+                      onChanged: (v) {
+                        btn.bgImage = v;
+                        widget.onChanged(btn);
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextField(
+                      controller: _bgColorCtrl,
+                      decoration: InputDecoration(
+                        labelText: 'Farbe (Hex)',
+                        hintText: '#6B4EFF',
+                        isDense: true,
+                        border: const OutlineInputBorder(),
+                        suffixIcon: btn.bgColor.isNotEmpty
+                            ? Container(
+                                margin: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: _parseColor(btn.bgColor) ??
+                                      Colors.transparent,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                width: 24,
+                                height: 24,
+                              )
+                            : null,
+                      ),
+                      onChanged: (v) {
+                        btn.bgColor = v;
+                        widget.onChanged(btn);
+                        setState(() {}); // refresh preview + swatch
+                      },
+                    ),
+                  ),
+                ],
+              ),
+
+              // Color presets
+              const SizedBox(height: 6),
+              SizedBox(
+                height: 28,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: _presetColors.map((hex) {
+                    final isSelected = btn.bgColor == hex;
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          btn.bgColor = hex;
+                          _bgColorCtrl.text = hex;
+                        });
+                        widget.onChanged(btn);
+                      },
+                      child: Container(
+                        width: 28,
+                        height: 28,
+                        margin: const EdgeInsets.only(right: 6),
+                        decoration: BoxDecoration(
+                          color: _parseColor(hex),
+                          borderRadius: BorderRadius.circular(6),
+                          border: isSelected
+                              ? Border.all(color: Colors.white, width: 2)
+                              : null,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              // Logo Image
+              TextField(
+                decoration: const InputDecoration(
+                  labelText: 'Logo (logo_image)',
+                  hintText: 'steam_logo.png',
+                  isDense: true,
+                  border: OutlineInputBorder(),
+                ),
+                onChanged: (v) {
+                  btn.logoImage = v;
+                  widget.onChanged(btn);
+                },
+              ),
+
+              const SizedBox(height: 8),
+
+              // Options
               Row(
                 children: [
                   Checkbox(
-                    value: widget.button.withError,
+                    value: btn.withError,
                     onChanged: (v) {
                       setState(() {
-                        widget.button.withError = v ?? false;
+                        btn.withError = v ?? false;
                       });
-                      widget.onChanged(widget.button);
+                      widget.onChanged(btn);
                     },
                   ),
-                  const Text('Show error on failure'),
+                  const Text('Fehler melden'),
                   const Spacer(),
                   Text(
                     'ID: ${widget.buttonId}',
