@@ -44,5 +44,6 @@ install/pkg/
 *.pkg.tar.zst
 
 *.AppImage
+*.apk
 *.tar.gz
 *.run

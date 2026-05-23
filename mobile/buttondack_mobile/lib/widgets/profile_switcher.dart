@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/models.dart';
 
-/// Dropdown-style profile switcher.
+/// Icon-button style profile switcher for the app bar.
 class ProfileSwitcher extends StatelessWidget {
   final List<Profile> profiles;
   final String activeProfile;
@@ -20,46 +20,44 @@ class ProfileSwitcher extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(24),
+    return PopupMenuButton<String>(
+      icon: Icon(
+        Icons.swap_horiz,
+        color: Theme.of(context).colorScheme.primary,
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const SizedBox(width: 12),
-          Icon(
-            Icons.dashboard_customize,
-            size: 18,
-            color: Theme.of(context).colorScheme.primary,
-          ),
-          const SizedBox(width: 8),
-          DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: activeProfile.isNotEmpty && profiles.any((p) => p.name == activeProfile)
-                  ? activeProfile
-                  : profiles.first.name,
-              dropdownColor: Theme.of(context).colorScheme.surface,
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurface,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
+      tooltip: 'Profile wechseln',
+      onSelected: onChanged,
+      itemBuilder: (ctx) => profiles.map((p) {
+        final isActive = p.name == activeProfile ||
+            (activeProfile.isEmpty && p == profiles.first);
+        return PopupMenuItem<String>(
+          value: p.name,
+          child: Row(
+            children: [
+              Icon(
+                Icons.folder,
+                size: 18,
+                color: isActive
+                    ? Theme.of(context).colorScheme.primary
+                    : Colors.grey,
               ),
-              items: profiles.map((profile) {
-                return DropdownMenuItem<String>(
-                  value: profile.name,
-                  child: Text(profile.name),
-                );
-              }).toList(),
-              onChanged: (value) {
-                if (value != null) onChanged(value);
-              },
-            ),
+              const SizedBox(width: 8),
+              Text(
+                p.name,
+                style: TextStyle(
+                  fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                  color: isActive ? Colors.white : Colors.grey.shade300,
+                ),
+              ),
+              if (isActive) ...[
+                const Spacer(),
+                Icon(Icons.check,
+                    size: 16, color: Theme.of(context).colorScheme.primary),
+              ],
+            ],
           ),
-        ],
-      ),
+        );
+      }).toList(),
     );
   }
 }

@@ -1,11 +1,12 @@
 import 'dart:async';
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../services/daemon_service.dart';
 
 /// A single button tile in the grid.
-/// Supports background image, background color, logo overlay, and press feedback.
+/// Renders differently based on button type:
+/// - command/hotkey: normal button with press feedback
+/// - spotify: shows a row of Spotify controls (Play/Pause, Next, Prev, Vol)
 class ButtonTile extends StatefulWidget {
   final String buttonId;
   final ButtonConfig button;
@@ -25,16 +26,13 @@ class ButtonTile extends StatefulWidget {
 }
 
 class _ButtonTileState extends State<ButtonTile> {
-  /// null = idle, true = success flash, false = error flash
   bool? _feedbackState;
   Timer? _feedbackTimer;
-
   StreamSubscription<ActionResult>? _actionSub;
 
   @override
   void initState() {
     super.initState();
-    // Listen for action results to show feedback
     _actionSub = widget.daemon.actionResults.listen((result) {
       if (!mounted) return;
       setState(() => _feedbackState = result.success);
@@ -52,11 +50,21 @@ class _ButtonTileState extends State<ButtonTile> {
     super.dispose();
   }
 
+  String get _imageBaseUrl {
+    final host = widget.daemon.host;
+    final port = widget.daemon.port;
+    return 'http://$host:$port/api/images';
+  }
+
   @override
   Widget build(BuildContext context) {
     final btn = widget.button;
 
-    // Determine background color
+    if (btn.type == 'spotify') {
+      return _buildSpotifyRow();
+    }
+
+    // --- Type: command or hotkey ---
     Color? backgroundColor;
     if (btn.bgColor.isNotEmpty) {
       final hex = btn.bgColor.replaceFirst('#', '');
@@ -67,7 +75,6 @@ class _ButtonTileState extends State<ButtonTile> {
       backgroundColor = Theme.of(context).colorScheme.surfaceContainerHighest;
     }
 
-    // Override with feedback colors
     Color? feedbackOverlay;
     if (_feedbackState == true) {
       feedbackOverlay = Colors.green.withValues(alpha: 0.35);
@@ -76,8 +83,8 @@ class _ButtonTileState extends State<ButtonTile> {
     }
 
     return GestureDetector(
-      onTap: () => widget.daemon.sendAction(
-          widget.profileName, widget.buttonId),
+      onTap: () =>
+          widget.daemon.sendAction(widget.profileName, widget.buttonId),
       onLongPress: () => _showButtonInfo(context),
       child: Container(
         decoration: BoxDecoration(
@@ -94,10 +101,10 @@ class _ButtonTileState extends State<ButtonTile> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // --- Layer 1: Background image or color ---
+            // Layer 1: Background image or color
             if (btn.bgImage.isNotEmpty)
-              Image.asset(
-                'assets/backgrounds/${btn.bgImage}',
+              Image.network(
+                '$_imageBaseUrl/${btn.bgImage}',
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) =>
                     _buildColorBackground(backgroundColor),
@@ -105,18 +112,16 @@ class _ButtonTileState extends State<ButtonTile> {
             else
               _buildColorBackground(backgroundColor),
 
-            // --- Layer 2: Feedback overlay ---
+            // Layer 2: Feedback overlay
             if (feedbackOverlay != null)
-              Positioned.fill(
-                child: Container(color: feedbackOverlay),
-              ),
+              Positioned.fill(child: Container(color: feedbackOverlay)),
 
-            // --- Layer 3: Logo image ---
+            // Layer 3: Logo image
             if (btn.logoImage.isNotEmpty)
               Positioned.fill(
                 child: Center(
-                  child: Image.asset(
-                    'assets/logos/${btn.logoImage}',
+                  child: Image.network(
+                    '$_imageBaseUrl/${btn.logoImage}',
                     width: 48,
                     height: 48,
                     fit: BoxFit.contain,
@@ -139,10 +144,7 @@ class _ButtonTileState extends State<ButtonTile> {
                         fontWeight: FontWeight.w700,
                         color: _textColorForBackground(backgroundColor),
                         shadows: const [
-                          Shadow(
-                            blurRadius: 4,
-                            color: Colors.black54,
-                          ),
+                          Shadow(blurRadius: 4, color: Colors.black54),
                         ],
                       ),
                       maxLines: 3,
@@ -152,7 +154,7 @@ class _ButtonTileState extends State<ButtonTile> {
                 ),
               ),
 
-            // --- Layer 4: Button name at bottom (only if logo shown) ---
+            // Layer 4: Button name at bottom (only if logo shown)
             if (btn.logoImage.isNotEmpty)
               Positioned(
                 left: 4,
@@ -179,6 +181,69 @@ class _ButtonTileState extends State<ButtonTile> {
     );
   }
 
+  /// Build a Spotify control row with Play/Pause, Next, Prev, Volume buttons.
+  Widget _buildSpotifyRow() {
+    final isPlaying = widget.daemon.currentTrack?.isPlaying ?? false;
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1DB954), Color(0xFF169C46)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          _spotifyButton(Icons.skip_previous, 'Prev', () {
+            widget.daemon.sendAction(widget.profileName, widget.buttonId);
+          }),
+          _spotifyButton(
+            isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
+            isPlaying ? 'Pause' : 'Play',
+            () {
+              widget.daemon.sendAction(widget.profileName, widget.buttonId);
+            },
+            isLarge: true,
+          ),
+          _spotifyButton(Icons.skip_next, 'Next', () {
+            widget.daemon.sendAction(widget.profileName, widget.buttonId);
+          }),
+          _spotifyButton(Icons.volume_up, 'Vol', () {
+            widget.daemon.sendAction(widget.profileName, widget.buttonId);
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _spotifyButton(IconData icon, String tooltip, VoidCallback onTap,
+      {bool isLarge = false}) {
+    return Tooltip(
+      message: tooltip,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Icon(
+            icon,
+            color: Colors.white,
+            size: isLarge ? 36 : 24,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildColorBackground(Color? color) {
     return Container(
       decoration: BoxDecoration(
@@ -189,7 +254,6 @@ class _ButtonTileState extends State<ButtonTile> {
   }
 
   Widget _buildLogoFallback(String name) {
-    // Show first letter as avatar-style fallback
     return Container(
       width: 48,
       height: 48,
@@ -212,7 +276,6 @@ class _ButtonTileState extends State<ButtonTile> {
 
   Color _textColorForBackground(Color? bg) {
     if (bg == null) return Colors.white;
-    // Simple luminance check for text contrast
     final l = bg.computeLuminance();
     return l > 0.5 ? Colors.black87 : Colors.white;
   }
@@ -232,6 +295,9 @@ class _ButtonTileState extends State<ButtonTile> {
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
+            Text('Type: ${widget.button.type}',
+                style: Theme.of(context).textTheme.labelMedium),
+            const SizedBox(height: 4),
             if (widget.button.command.isNotEmpty) ...[
               Text('Command:',
                   style: Theme.of(context).textTheme.labelMedium),

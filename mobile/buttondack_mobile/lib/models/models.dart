@@ -54,9 +54,16 @@ class SpotifyConfig {
 
 class Profile {
   final String name;
+  final int gridCols;
+  final int gridRows;
   final Map<String, ButtonConfig> buttons;
 
-  Profile({required this.name, required this.buttons});
+  Profile({
+    required this.name,
+    this.gridCols = 3,
+    this.gridRows = 2,
+    required this.buttons,
+  });
 
   factory Profile.fromJson(Map<String, dynamic> json) {
     final buttonsRaw = json['buttons'] as Map<String, dynamic>? ?? {};
@@ -66,13 +73,30 @@ class Profile {
     });
     return Profile(
       name: json['name'] as String? ?? '',
+      gridCols: json['grid_cols'] as int? ?? 3,
+      gridRows: json['grid_rows'] as int? ?? 2,
       buttons: buttons,
     );
+  }
+
+  /// Return all buttons ordered by (row, col).
+  List<MapEntry<String, ButtonConfig>> get orderedButtons {
+    final entries = buttons.entries.toList();
+    entries.sort((a, b) {
+      final c = a.value.row.compareTo(b.value.row);
+      return c != 0 ? c : a.value.col.compareTo(b.value.col);
+    });
+    return entries;
   }
 }
 
 class ButtonConfig {
   final String name;
+  final String type; // "command", "hotkey", "spotify"
+  final int row;
+  final int col;
+  final int colSpan;
+  final int rowSpan;
   final String bgImage;
   final String logoImage;
   final String bgColor;
@@ -82,6 +106,11 @@ class ButtonConfig {
 
   ButtonConfig({
     required this.name,
+    this.type = 'command',
+    this.row = 0,
+    this.col = 0,
+    this.colSpan = 1,
+    this.rowSpan = 1,
     this.bgImage = '',
     this.logoImage = '',
     this.bgColor = '',
@@ -93,6 +122,11 @@ class ButtonConfig {
   factory ButtonConfig.fromJson(Map<String, dynamic> json) {
     return ButtonConfig(
       name: json['name'] as String? ?? '',
+      type: json['type'] as String? ?? 'command',
+      row: json['row'] as int? ?? 0,
+      col: json['col'] as int? ?? 0,
+      colSpan: json['col_span'] as int? ?? 1,
+      rowSpan: json['row_span'] as int? ?? 1,
       bgImage: json['bg_image'] as String? ?? '',
       logoImage: json['logo_image'] as String? ?? '',
       bgColor: json['bg_color'] as String? ?? '',

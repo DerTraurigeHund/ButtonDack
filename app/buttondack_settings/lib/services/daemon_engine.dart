@@ -368,6 +368,12 @@ class DaemonEngine extends ChangeNotifier {
         return;
       }
 
+      if (path.startsWith('/api/images/') && request.method == 'GET') {
+        final filename = path.substring('/api/images/'.length);
+        _serveImage(request, filename);
+        return;
+      }
+
       // 404
       _jsonResponse(request, {'error': 'not found'}, status: 404);
     } catch (e) {
@@ -626,6 +632,47 @@ class DaemonEngine extends ChangeNotifier {
     ));
     onTrackChanged?.call(_currentTrack!);
     notifyListeners();
+  }
+
+  /// Serve an image file from ~/.config/buttondack/images/
+  void _serveImage(HttpRequest request, String filename) {
+    // Prevent path traversal
+    if (filename.contains('..') || filename.contains('/')) {
+      _jsonResponse(request, {'error': 'invalid filename'}, status: 400);
+      return;
+    }
+
+    final home = Platform.environment['HOME'] ?? '/tmp';
+    final file = File('$home/.config/buttondack/images/$filename');
+
+    if (!file.existsSync()) {
+      _jsonResponse(request, {'error': 'image not found'}, status: 404);
+      return;
+    }
+
+    try {
+      final bytes = file.readAsBytesSync();
+      request.response.statusCode = 200;
+      request.response.headers.contentType = ContentType.parse(_guessImageMime(filename));
+      request.response.contentLength = bytes.length;
+      request.response.add(bytes);
+      request.response.close();
+    } catch (e) {
+      debugPrint('[Daemon] Image serve error: $e');
+      _jsonResponse(request, {'error': 'read error'}, status: 500);
+    }
+  }
+
+  String _guessImageMime(String filename) {
+    final lower = filename.toLowerCase();
+    if (lower.endsWith('.png')) return 'image/png';
+    if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) return 'image/jpeg';
+    if (lower.endsWith('.gif')) return 'image/gif';
+    if (lower.endsWith('.webp')) return 'image/webp';
+    if (lower.endsWith('.svg')) return 'image/svg+xml';
+    if (lower.endsWith('.bmp')) return 'image/bmp';
+    if (lower.endsWith('.ico')) return 'image/x-icon';
+    return 'application/octet-stream';
   }
 
   /// Read the full request body as a String.
