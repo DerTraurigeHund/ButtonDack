@@ -1,0 +1,90 @@
+daemon:
+  host: "0.0.0.0"
+  port: 42069
+  config_dir: "~/.config/buttondack"
+
+spotify:
+  client_id: ""
+  client_secret: ""
+  enabled: false
+
+profiles:
+  - name: System
+    buttons:
+      btn0:
+        name: Shutdown
+        image: shutdown.png
+        command: "systemctl poweroff -i"
+        with_error: true
+      btn1:
+        name: Reboot
+        image: restart.png
+        command: "systemctl reboot -i"
+        with_error: true
+      btn2:
+        name: Sleep
+        image: sleep.png
+        command: "systemctl suspend -i"
+        with_error: true
+      btn3:
+        name: Settings
+        image: settings.png
+        hotkeys: [["ctrl", "alt", "s"]]
+      btn4:
+        name: Terminal
+        image: terminal.png
+        command: "gnome-terminal"
+
+  - name: Media
+    buttons:
+      btn0:
+        name: Play/Pause
+        image: play.png
+        command: "playerctl play-pause"
+      btn1:
+        name: Next
+        image: next.png
+        command: "playerctl next"
+      btn2:
+        name: Previous
+        image: previous.png
+        command: "playerctl previous"
+      btn3:
+        name: Stop
+        image: stop.png
+        command: "playerctl stop"
+      btn4:
+        name: Volume Up
+        image: volume_up.png
+        command: "amixer set Master 5%+"
+      btn5:
+        name: Volume Down
+        image: volume_down.png
+        command: "amixer set Master 5%-"
+
+  - name: Apps
+    buttons:
+      btn0:
+        name: Firefox
+        image: firefox.png
+        command: "firefox"
+      btn1:
+        name: Discord
+        image: discord.png
+        command: "discord"
+      btn2:
+        name: VS Code
+        image: vscode.png
+        command: "code"
+      btn3:
+        name: Steam
+        image: steam.png
+        command: "steam"
+      btn4:
+        name: YouTube
+        image: youtube.png
+        command: "firefox https://youtube.com"
+      btn5:
+        name: ChatGPT
+        image: chatgpt.png
+        command: "firefox https://chatgpt.com"

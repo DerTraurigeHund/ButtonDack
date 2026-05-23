@@ -1,0 +1,45 @@
+# Binaries
+daemon/build/
+daemon/buttondackd
+*.exe
+
+# Flutter
+mobile/buttondack_mobile/.dart_tool/
+mobile/buttondack_mobile/.packages
+mobile/buttondack_mobile/build/
+mobile/buttondack_mobile/.flutter-plugins
+mobile/buttondack_mobile/.flutter-plugins-dependencies
+mobile/buttondack_mobile/.flutter-plugins
+mobile/buttondack_mobile/.flutter-plugins-dependencies
+mobile/buttondack_mobile/android/.gradle/
+mobile/buttondack_mobile/android/local.properties
+mobile/buttondack_mobile/android/key.properties
+mobile/buttondack_mobile/ios/Pods/
+mobile/buttondack_mobile/ios/.symlinks/
+
+app/buttondack_settings/.dart_tool/
+app/buttondack_settings/.packages
+app/buttondack_settings/build/
+app/buttondack_settings/.flutter-plugins
+app/buttondack_settings/.flutter-plugins-dependencies
+app/buttondack_settings/.flutter-plugins
+app/buttondack_settings/.flutter-plugins-dependencies
+app/buttondack_settings/android/.gradle/
+app/buttondack_settings/android/local.properties
+app/buttondack_settings/ios/Pods/
+app/buttondack_settings/ios/.symlinks/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Packages
+install/pkg/
+*.deb
+*.pkg.tar.zst
+
